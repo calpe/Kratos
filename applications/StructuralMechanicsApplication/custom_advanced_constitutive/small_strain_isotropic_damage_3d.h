@@ -212,9 +212,9 @@ public:
      * @param rValue a reference to the returned value
      * @return rValue output: the value of the specified variable
      */
-    Vector& CalculateValue(Parameters& rValues,
-                           const Variable<Vector>& rThisVariable,
-                           Vector& rValue) override;
+     Vector& CalculateValue(Parameters& rValues,
+                            const Variable<Vector>& rThisVariable,
+                            Vector& rValue) override;
 
 
     /**

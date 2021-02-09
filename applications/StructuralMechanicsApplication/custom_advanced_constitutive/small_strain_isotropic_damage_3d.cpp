@@ -353,7 +353,6 @@ Vector& SmallStrainIsotropicDamage3D::CalculateValue(
         rThisVariable == GREEN_LAGRANGE_STRAIN_VECTOR ||
         rThisVariable == ALMANSI_STRAIN_VECTOR) {
 
-        KRATOS_WATCH(rThisVariable)
         rValue = rValues.GetStrainVector();
         if (rValues.GetProcessInfo().Has(INITIAL_STRAIN)) {
             noalias(rValue) += rValues.GetProcessInfo()[INITIAL_STRAIN];
