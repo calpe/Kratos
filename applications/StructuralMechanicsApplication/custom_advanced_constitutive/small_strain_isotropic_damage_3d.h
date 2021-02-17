@@ -115,7 +115,7 @@ public:
     bool Has(const Variable<double>& rThisVariable) override;
 
     /**
-     * @brief Returns whether this constitutive Law has specified variable (double)
+     * @brief Returns whether this constitutive Law has specified variable (Vector)
      * @param rThisVariable the variable to be checked for
      * @return true if the variable is defined in the constitutive law
      */
@@ -145,6 +145,15 @@ public:
         ) override;
 
     /**
+     * @brief Indicates if this CL requires initialization of the material response,
+     * called by the element in InitializeMaterialResponse.
+     */
+    bool RequiresInitializeMaterialResponse() override
+    {
+        return false;
+    }
+
+    /**
      * @brief This is to be called at the very beginning of the calculation
      * @details (e.g. from InitializeElement) in order to initialize all relevant attributes of the constitutive law
      * @param rMaterialProperties the Properties instance of the current element
@@ -154,6 +163,13 @@ public:
     void InitializeMaterial(const Properties& rMaterialProperties,
                             const GeometryType& rElementGeometry,
                             const Vector& rShapeFunctionsValues) override;
+
+    /**
+     * @brief This method computes the stress and constitutive tensor
+     * @param rValues The norm of the deviation stress
+     * @param rStrainVariable
+     */
+    void CalculateStressResponse(ConstitutiveLaw::Parameters& rValues, Vector& rInternalVariables) override;
 
     /**
      * @brief Computes the material response in terms of 2nd Piola-Kirchhoff stresses and constitutive tensor
@@ -166,18 +182,9 @@ public:
     void CalculateMaterialResponseCauchy(Parameters& rValues) override;
 
     /**
-     * @brief Indicates if this CL requires initialization of the material response,
-     * called by the element in InitializeSolutionStep.
-     */
-    bool RequiresInitializeMaterialResponse() override
-    {
-        return false;
-    }
-
-    /**
      * @brief Indicates if this CL requires finalization step the material
      * response (e.g. update of the internal variables), called by the element
-     * in FinalizeSolutionStep.
+     * in FinalizeMaterialResponse.
      */
     bool RequiresFinalizeMaterialResponse() override
     {
@@ -189,10 +196,10 @@ public:
      * @param rValues The specific parameters of the current constitutive law
      * @see Parameters
      */
+    void FinalizeMaterialResponseCauchy(Parameters& rValues) override;
     void FinalizeMaterialResponsePK2(Parameters& rValues) override;
     void FinalizeMaterialResponsePK1(Parameters& rValues) override;
     void FinalizeMaterialResponseKirchhoff(Parameters& rValues) override;
-    void FinalizeMaterialResponseCauchy(Parameters& rValues) override;
 
     /**
      * @brief calculates the value of a specified variable (double)
@@ -242,13 +249,6 @@ public:
     void PrintData(std::ostream& rOStream) const override {
         rOStream << "Small Strain Isotropic Damage 3D constitutive law\n";
     };
-
-    /**
-     * @brief This method computes the stress and constitutive tensor
-     * @param rValues The norm of the deviation stress
-     * @param rStrainVariable
-     */
-    void CalculateStressResponse(ConstitutiveLaw::Parameters& rValues, Vector& rInternalVariables) override;
 
 protected:
 
