@@ -199,28 +199,31 @@ void SmallStrainIsotropicDamage3D::CalculateStressResponse(
     Vector& rInternalVariables)
 {
     double strain_variable = mStrainVariable;
-
-    const Properties& r_material_properties = rValues.GetMaterialProperties();
-    Flags& r_constitutive_law_options = rValues.GetOptions();
-    Vector& r_strain_vector = rValues.GetStrainVector();
-    if (rValues.GetProcessInfo().Has(INITIAL_STRAIN)) {
-        noalias(r_strain_vector) += rValues.GetProcessInfo()[INITIAL_STRAIN];
-    }
+    const Properties& r_material_properties = rParametersValues.GetMaterialProperties();
+    Flags& r_constitutive_law_options = rParametersValues.GetOptions();
+    Vector& r_strain_vector = rParametersValues.GetStrainVector();
 
     if( r_constitutive_law_options.IsNot( ConstitutiveLaw::USE_ELEMENT_PROVIDED_STRAIN )) {
-        //this->CalculateValue(rValues, STRAIN, r_strain_vector);
+        CalculateCauchyGreenStrain( rParametersValues, r_strain_vector);
+    }
+
+    // WIP
+    //AddInitialStrainVectorContribution(r_strain_vector, rParametersValues);
+    if (rParametersValues.GetProcessInfo().Has(INITIAL_STRAIN)) {
+        noalias(r_strain_vector) += rParametersValues.GetProcessInfo()[INITIAL_STRAIN];
     }
 
     // If we compute the tangent moduli or the stress
     if( r_constitutive_law_options.Is( ConstitutiveLaw::COMPUTE_STRESS ) ||
         r_constitutive_law_options.Is( ConstitutiveLaw::COMPUTE_CONSTITUTIVE_TENSOR )) {
-        Vector& r_stress_vector = rValues.GetStressVector();
-        Matrix& r_constitutive_matrix = rValues.GetConstitutiveMatrix();
-        CalculateElasticMatrix(r_constitutive_matrix, rValues);
+        Vector& r_stress_vector = rParametersValues.GetStressVector();
+        Matrix& r_constitutive_matrix = rParametersValues.GetConstitutiveMatrix();
+        CalculateElasticMatrix(r_constitutive_matrix, rParametersValues);
         noalias(r_stress_vector) = prod(r_constitutive_matrix, r_strain_vector);
 
-        // Auxiliary stress vector to allow derived models (e.g. traction-only damage) to set
-        // a different value of r_stress_vector_pos with ComputePositiveStressVector function
+        // Auxiliary stress vector to allow derived models (e.g. traction-only damage)
+        // to set the value of r_stress_vector_pos with the ComputePositiveStressVector
+        // function.
         // In the symmetric model, ComputePositiveStressVector does nothing.
         Vector r_stress_vector_pos = r_stress_vector;
         ComputePositiveStressVector(r_stress_vector_pos, r_stress_vector);
@@ -261,6 +264,7 @@ void SmallStrainIsotropicDamage3D::CalculateStressResponse(
 void SmallStrainIsotropicDamage3D::ComputePositiveStressVector(
             Vector& rStressVectorPos, Vector& rStressVector)
 {
+    // explicit pass
 }
 
 //************************************************************************************
@@ -326,11 +330,14 @@ double& SmallStrainIsotropicDamage3D::CalculateValue(
     )
 {
     if (rThisVariable == STRAIN_ENERGY){
-        Vector& r_strain_vector = rValues.GetStrainVector();
-        if (rValues.GetProcessInfo().Has(INITIAL_STRAIN)) {
-            noalias(r_strain_vector) += rValues.GetProcessInfo()[INITIAL_STRAIN];
+        Vector& r_strain_vector = rParametersValues.GetStrainVector();
+
+        //AddInitialStrainVectorContribution(r_strain_vector, rParametersValues);
+        if (rParametersValues.GetProcessInfo().Has(INITIAL_STRAIN)) {
+            noalias(r_strain_vector) += rParametersValues.GetProcessInfo()[INITIAL_STRAIN];
         }
-        const Properties& r_material_properties = rValues.GetMaterialProperties();
+
+        const Properties& r_material_properties = rParametersValues.GetMaterialProperties();
         Matrix constitutive_matrix;
         CalculateElasticMatrix(constitutive_matrix, rParametersValues);
         const double stress_like_variable = EvaluateHardeningLaw(mStrainVariable, r_material_properties);
@@ -349,6 +356,7 @@ double& SmallStrainIsotropicDamage3D::CalculateValue(
 
     return(rValue);
 }
+
 //************************************************************************************
 //************************************************************************************
 
@@ -362,9 +370,29 @@ Vector& SmallStrainIsotropicDamage3D::CalculateValue(
         rThisVariable == GREEN_LAGRANGE_STRAIN_VECTOR ||
         rThisVariable == ALMANSI_STRAIN_VECTOR) {
 
-        rValue = rValues.GetStrainVector();
-        if (rValues.GetProcessInfo().Has(INITIAL_STRAIN)) {
-            noalias(rValue) += rValues.GetProcessInfo()[INITIAL_STRAIN];
+        // WIP
+        rValue = rParameterValues.GetStrainVector();
+        //AddInitialStrainVectorContribution(rValue, rParameterValues);
+        if (rParametersValues.GetProcessInfo().Has(INITIAL_STRAIN)) {
+            noalias(rValue) += rParametersValues.GetProcessInfo()[INITIAL_STRAIN];
+        }
+
+        //// (WIP) Better: Just compute STRAIN:
+        //Flags &cl_options = rParameterValues.GetOptions();
+        //cl_options.Set(ConstitutiveLaw::COMPUTE_STRESS, false);
+        //cl_options.Set(ConstitutiveLaw::COMPUTE_CONSTITUTIVE_TENSOR, false);
+        //rValue = rParameterValues.GetStrainVector();
+        //CalculateMaterialResponsePK2(rParameterValues);
+        //// Restore original options
+        //cl_options.Set(ConstitutiveLaw::COMPUTE_STRESS, true);
+        //cl_options.Set(ConstitutiveLaw::COMPUTE_CONSTITUTIVE_TENSOR, true);
+    }
+
+    // WIP, for later
+    if (rThisVariable == INITIAL_STRAIN_VECTOR) {
+        if (this->HasInitialState()) {
+           const auto& r_initial_state = GetInitialState();
+           rValue = r_initial_state.GetInitialStrainVector();
         }
     }
 
