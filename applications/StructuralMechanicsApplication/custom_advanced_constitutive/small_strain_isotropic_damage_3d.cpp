@@ -361,7 +361,7 @@ double& SmallStrainIsotropicDamage3D::CalculateValue(
 //************************************************************************************
 
 Vector& SmallStrainIsotropicDamage3D::CalculateValue(
-    ConstitutiveLaw::Parameters& rParameterValues,
+    ConstitutiveLaw::Parameters& rParametersValues,
     const Variable<Vector>& rThisVariable,
     Vector& rValue
     )
@@ -371,8 +371,8 @@ Vector& SmallStrainIsotropicDamage3D::CalculateValue(
         rThisVariable == ALMANSI_STRAIN_VECTOR) {
 
         // WIP
-        rValue = rParameterValues.GetStrainVector();
-        //AddInitialStrainVectorContribution(rValue, rParameterValues);
+        rValue = rParametersValues.GetStrainVector();
+        //AddInitialStrainVectorContribution(rValue, rParametersValues);
         if (rParametersValues.GetProcessInfo().Has(INITIAL_STRAIN)) {
             noalias(rValue) += rParametersValues.GetProcessInfo()[INITIAL_STRAIN];
         }
@@ -389,12 +389,12 @@ Vector& SmallStrainIsotropicDamage3D::CalculateValue(
     }
 
     // WIP, for later
-    if (rThisVariable == INITIAL_STRAIN_VECTOR) {
-        if (this->HasInitialState()) {
-           const auto& r_initial_state = GetInitialState();
-           rValue = r_initial_state.GetInitialStrainVector();
-        }
-    }
+    //if (rThisVariable == INITIAL_STRAIN_VECTOR) {
+    //    if (this->HasInitialState()) {
+    //       const auto& r_initial_state = GetInitialState();
+    //       rValue = r_initial_state.GetInitialStrainVector();
+    //    }
+    //}
 
     return(rValue);
 }
