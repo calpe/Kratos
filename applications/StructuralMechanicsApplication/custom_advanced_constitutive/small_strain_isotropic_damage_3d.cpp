@@ -54,9 +54,10 @@ SmallStrainIsotropicDamage3D::~SmallStrainIsotropicDamage3D()
 bool SmallStrainIsotropicDamage3D::Has(const Variable<double>& rThisVariable)
 {
     if(rThisVariable == STRAIN_ENERGY){
-        // explicitly returning "false", so we know we must call CalculateValue(...)
+        // explicitly returning "false", so the element calls CalculateValue(...)
         return false;
     }
+
     if(rThisVariable == DAMAGE_VARIABLE){
         // explicitly returning "false", so we know we must call CalculateValue(...)
         return false;
@@ -78,14 +79,19 @@ bool SmallStrainIsotropicDamage3D::Has(const Variable<Vector>& rThisVariable)
         // explicitly returning "false", so the element calls CalculateValue(...)
         return false;
     }
-    if(rThisVariable == GREEN_LAGRANGE_STRAIN_VECTOR){
-        // explicitly returning "false", so the element calls CalculateValue(...)
-        return false;
-    }
-    if(rThisVariable == ALMANSI_STRAIN_VECTOR){
-        // explicitly returning "false", so the element calls CalculateValue(...)
-        return false;
-    }
+
+    // WIP note: below measures are intercepted by BaseSolid element
+
+    //if(rThisVariable == GREEN_LAGRANGE_STRAIN_VECTOR){
+    //    // explicitly returning "false", so the element calls CalculateValue(...)
+    //    return false;
+    //}
+
+    //if(rThisVariable == ALMANSI_STRAIN_VECTOR){
+    //    // explicitly returning "false", so the element calls CalculateValue(...)
+    //    return false;
+    //}
+
     return false;
 }
 
@@ -98,7 +104,6 @@ Vector& SmallStrainIsotropicDamage3D::GetValue(
     )
 {
     if(rThisVariable == INTERNAL_VARIABLES){
-
         rValue.resize(1);
         rValue[0] = mStrainVariable;
     }
@@ -366,10 +371,10 @@ Vector& SmallStrainIsotropicDamage3D::CalculateValue(
     Vector& rValue
     )
 {
-    if (rThisVariable == STRAIN ||
-        rThisVariable == GREEN_LAGRANGE_STRAIN_VECTOR ||
-        rThisVariable == ALMANSI_STRAIN_VECTOR) {
-
+    //if (rThisVariable == STRAIN ||
+    //    rThisVariable == GREEN_LAGRANGE_STRAIN_VECTOR ||
+    //    rThisVariable == ALMANSI_STRAIN_VECTOR) {
+    if (rThisVariable == STRAIN){
         // WIP
         rValue = rParametersValues.GetStrainVector();
         //AddInitialStrainVectorContribution(rValue, rParametersValues);
