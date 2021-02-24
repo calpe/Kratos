@@ -98,7 +98,7 @@ ModelPart& EmbeddedSkinVisualizationProcess::CreateAndPrepareVisualizationModelP
     // This is required to perform all the IsDistributed checks that appear before creating the visualization mesh
     // Note that these checks might be required outside this process (i.e. in the creation of the visualization mesh output)
     // This will be updated by a proper one by the ParallelFillCommunicator after the creation of the visualization entities
-    //r_visualization_model_part.SetCommunicator(r_origin_model_part.pGetCommunicator());  //TODO: with this OpenMP mesh output does not work!
+    r_visualization_model_part.SetCommunicator(r_origin_model_part.pGetCommunicator());  //TODO: with this OpenMP mesh output does not work!
 
     // If MPI, add the PARTITION_INDEX variable to the visualization model part variables
     KRATOS_WATCH(r_visualization_model_part.IsDistributed());
