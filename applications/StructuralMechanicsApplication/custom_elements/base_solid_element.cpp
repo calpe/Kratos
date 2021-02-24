@@ -17,6 +17,7 @@
 // Project includes
 #include "utilities/math_utils.h"
 #include "utilities/geometry_utilities.h"
+#include "utilities/atomic_utilities.h"
 
 // Application includes
 #include "custom_elements/base_solid_element.h"
@@ -459,8 +460,7 @@ void BaseSolidElement::AddExplicitContribution(
         for (IndexType i = 0; i < number_of_nodes; ++i) {
             const IndexType index = i * dimension;
 
-            #pragma omp atomic
-            r_geom[i].GetValue(NODAL_MASS) += element_mass_vector[index];
+            AtomicAdd(r_geom[i].GetValue(NODAL_MASS), element_mass_vector[index]);
         }
     }
 
@@ -507,8 +507,7 @@ void BaseSolidElement::AddExplicitContribution(
             array_1d<double, 3>& r_force_residual = r_geom[i].FastGetSolutionStepValue(FORCE_RESIDUAL);
 
             for (IndexType j = 0; j < dimension; ++j) {
-                #pragma omp atomic
-                r_force_residual[j] += rRHSVector[index + j] - damping_residual_contribution[index + j];
+                AtomicAdd(r_force_residual[j], (rRHSVector[index + j] - damping_residual_contribution[index + j]));
             }
         }
     }
@@ -600,7 +599,7 @@ void BaseSolidElement::CalculateMassMatrix(
     KRATOS_ERROR_IF_NOT(r_prop.Has(DENSITY)) << "DENSITY has to be provided for the calculation of the MassMatrix!" << std::endl;
 
     // Checking if computing lumped mass matrix
-    const bool compute_lumped_mass_matrix =  r_prop.Has(COMPUTE_LUMPED_MASS_MATRIX) ? r_prop[COMPUTE_LUMPED_MASS_MATRIX] : false;
+    const bool compute_lumped_mass_matrix = StructuralMechanicsElementUtilities::ComputeLumpedMassMatrix(r_prop, rCurrentProcessInfo);
 
     // LUMPED MASS MATRIX
     if (compute_lumped_mass_matrix) {
